@@ -24,14 +24,6 @@
     </q-page-container>
 
     <q-separator inset />
-    
-    <!-- <footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
-      <q-toolbar>
-          <div class="row footer-copyright justify-center">&copy; {{ new Date().getFullYear() }} Copyright:&nbsp;
-            <a href="/">Chirala SRO</a>
-          </div>
-      </q-toolbar>
-    </footer> -->
 
        <q-footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
       <q-toolbar>
@@ -60,84 +52,27 @@
 </style>
 
 
-<script>
-import { defineComponent, ref } from 'vue'
-// import EssentialLink from 'components/EssentialLink.vue'
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import signOut from 'src/firebase/firebase-signout.js'
+// import getAuth from 'src/firebase/firebase-signout.js'
 
-// const currentYear = new Date().getFullYear();
-const linksList = [
-  {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
-  }
-]
+// const auth = getAuth();
+const loading = ref(false);
+const router = useRouter()
 
-export default defineComponent({
-  name: 'MainLayout',
+const logout = async () => {
+  loading.value = true;
+  // signOut(auth).then(() => {
+  signOut().then(() => {
+    // debugger
+     router.push('/');
+  }).catch(err => {
+   console.log(err)
+  });
+}
 
-  components: {
-    // EssentialLink
-    // VuePdfEmbed
-  },
-
-  // currentYear: ref(new Date().getFullYear()),
-
-  setup () {
-    const leftDrawerOpen = ref(false)
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer () {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      },
-      // getSource (link) {
-      //   alert(link)
-      // }
-      // logout() {
-      //   console.log('logged out')
-      // }
-    }
-  }
-})
 </script>
 
 <style type="text/css">

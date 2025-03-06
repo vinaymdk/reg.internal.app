@@ -54,12 +54,12 @@
          <q-btn class="full-width fredoka" color="primary" label="Login" rounded
           type="submit"></q-btn>
 
-         <div class="q-mt-lg">
+         <!-- <div class="q-mt-lg">
           <div class="q-mt-sm">
            Don't have an account yet?
            <router-link class="text-primary" to="/register">Register</router-link>
           </div>
-         </div>
+         </div> -->
         </div>
        </q-form>
       </q-card-section>
@@ -100,7 +100,8 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import login from 'src/firebase/firebase-login'
-// import router from "router";
+import { useRouter } from 'vue-router'
+const router = useRouter()
 
 // export default {
 //   data() {
@@ -145,31 +146,15 @@ const form = ref(null);
 
 const submit = async () => {
  if (form.value.validate()) {
-    // debugger
   try {
    await login(user);
-    // await someAsyncFunction();
-    // this.$router.push("/dashboard");
-   // router.push('/home')
-   this.$router.push('/'); // Redirect to home
+    // console.log("Hi "+user.email + " You are logged in...")
+   router.push('/home');
   } catch (err) {
     console.error("An error occurred:", err);
-    debugger
   }
  }
 }
-// const submit = async () => {
-//   try {
-//     debugger
-//     // const user = await login(this.email, this.password);
-//     const user = await login(user);
-//     this.$q.notify({ type: 'positive', message: `Welcome ${user.email}` });
-//     this.$router.push('/'); // Redirect to home
-//   } catch (error) {
-//     debugger
-//     this.$q.notify({ type: 'negative', message: error });
-//   }
-// }
 
 </script>
 <!-- <script>

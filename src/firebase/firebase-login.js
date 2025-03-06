@@ -6,6 +6,10 @@ const login = (data) => {
   Loading.show()
   signInWithEmailAndPassword(auth, data.email, data.password).then(userCredential => {
    Loading.hide()
+   Notify.create({
+    type: 'positive',
+    message: 'Hi '+userCredential.user.email+' Welcome to Chirala SRO Internal applications...'
+   })
    resolve(userCredential.user)
   }).catch(err => {
    Loading.hide()

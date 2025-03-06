@@ -25,7 +25,7 @@ const firebaseConfig = {
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-// await signInWithEmailAndPassword(auth, email, password)
+// await signInWithEmailAndPassword(auth, email, password);
 // const db = getFirestore(app);
 // export const auth = getAnalytics(app);
 
@@ -33,7 +33,7 @@ onAuthStateChanged(auth, (user) => {
  if (user) {
   LocalStorage.set('user', user);
   // await signInWithEmailAndPassword(auth, user.email, user.password)
-  debugger
+  // debugger
  } else {
   LocalStorage.remove('user')
  }
