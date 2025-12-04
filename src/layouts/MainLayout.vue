@@ -1,79 +1,16 @@
-<!-- <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { auth } from 'src/firebase/index.js'
-import { getIdTokenResult } from 'firebase/auth'
-import signOut from 'src/firebase/firebase-signout.js'
-
-const loading = ref(false)
-const router = useRouter()
-const currentUser = ref(null)
-const userRole = ref(null)
-
-// Get authorized user information when component mounts
-onMounted(async () => {
-  try {
-    const user = auth.currentUser
-    
-    if (user) {
-      // Store user information
-      currentUser.value = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified
-      }
-      
-      console.log('Authenticated User:', currentUser.value)
-      
-      // Get user role/claims from ID token
-      const idTokenResult = await getIdTokenResult(user)
-
-      userRole.value = {
-        admin: !!idTokenResult?.claims?.admin,
-        role: idTokenResult?.claims?.role || 'user',
-        customClaims: idTokenResult?.claims
-      }
-      
-      console.log('User Role:', userRole.value)
-    } else {
-      console.log('No authenticated user found')
-      router.push('/')
-    }
-  } catch (err) {
-    console.error('Error fetching user information:', err)
-    router.push('/')
-  }
-})
-
-const logout = async () => {
-  loading.value = true
-  try {
-    await signOut()
-    currentUser.value = null
-    userRole.value = null
-    router.push('/')
-  } catch (err) {
-    console.error('Logout error:', err)
-  } finally {
-    loading.value = false
-  }
-}
-</script> -->
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { auth } from 'src/firebase/index.js'
 import { getFirestore, doc, getDoc } from 'firebase/firestore'
 import signOut from 'src/firebase/firebase-signout.js'
-
 const loading = ref(false)
 const router = useRouter()
 const currentUser = ref(null)
 const userRole = ref(null)
 const db = getFirestore()
+const showDialog = ref(false) // { changed code }
+
 
 // Get authorized user information and verify role from Firestore
 onMounted(async () => {
@@ -141,6 +78,11 @@ const logout = async () => {
 
 const navigateTo = (path) => {
   router.push(path)
+}
+
+// { changed code }
+const showContactPopup = () => {
+  showDialog.value = true
 }
 </script>
 
@@ -251,23 +193,59 @@ const navigateTo = (path) => {
       <router-view />
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
+     <q-footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
       <q-toolbar>
-          <q-tabs
-            v-model="tab"
-            class="text-teal"
-          >
-            <a href="http://registration.ap.gov.in/" target="_blank"><q-tab name="igrs_ofc" label="IGRS - Official" /></a>
-            <a href="http://meebhoomi.ap.gov.in/" target="_blank"><q-tab name="meebhoomi" label="Meebhoomi" /></a>
-            <a href="https://cardprimme.rs.ap.gov.in/PDE" target="_blank"><q-tab name="prime_2" label="Prime 2.0" /></a>
-            <a href="https://prdcfms.apcfss.in:44300/sap/bc/ui5_ui5/sap/zfi_rcp_challan/index.html?sap-client=350" target="_blank"><q-tab name="prdcfms" label="CFMS Challan" /></a>
-
-            <a href="#"><q-tab name="contact" label="Contact: 96427 84240" /></a>
-          </q-tabs>
+        <q-tabs
+          v-model="tab"
+          class="text-teal"
+        >
+          <a href="http://registration.ap.gov.in/" target="_blank"><q-tab name="igrs_ofc" label="IGRS - Official" /></a>
+          <a href="http://meebhoomi.ap.gov.in/" target="_blank"><q-tab name="meebhoomi" label="Meebhoomi" /></a>
+          <a href="https://cardprimme.rs.ap.gov.in/PDE" target="_blank"><q-tab name="prime_2" label="Prime 2.0" /></a>
+          <a href="https://prdcfms.apcfss.in:44300/sap/bc/ui5_ui5/sap/zfi_rcp_challan/index.html?sap-client=350" target="_blank"><q-tab name="prdcfms" label="CFMS Challan" /></a>
+          <!-- Contact button with popup -->
+          <q-btn flat class="text-teal" label="Contact" @click="showContactPopup" />
+        </q-tabs>
       </q-toolbar>
     </q-footer>
 
     <q-separator inset />
+
+    <!-- { changed code } Contact Dialog -->
+    <q-dialog v-model="showDialog" position="standard">
+      <q-card style="min-width: 400px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Contact Information</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section>
+          <div class="q-gutter-md">
+            <div class="row">
+              <strong class="col-3">Name:</strong>
+              <span class="col-9">Vinay Kumar Medikonda</span>
+            </div>
+            <div class="row">
+              <strong class="col-3">Address:</strong>
+              <span class="col-9">Chirala</span>
+            </div>
+            <div class="row">
+              <strong class="col-3">Phone:</strong>
+              <span class="col-9">+91 9642784240</span>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="right">
+          <q-btn flat label="Close" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
   </q-layout>
 </template>
@@ -278,47 +256,27 @@ const navigateTo = (path) => {
   bottom: 0;
   width: 100%;
 }
+
+a {
+  color: white;
+  text-decoration: none;
+}
+
+a:hover {
+  color: blue;
+}
 </style>
+
 <style type="text/css">
   .logo-styl {
     width: 180px;
-    padding: 8px
+    padding: 8px;
   }
   .foot-about-content {
     font-weight: 200;
-    padding: 15px
+    padding: 15px;
   }
   .line-height {
-    line-height: 1.4
-  }
-  a {
-    color: white;
-    text-decoration: none
-  }
-  a:hover {
-    color: blue;
-  }
-  @media only screen and (min-width: 960px) {
-      /* styles for browsers larger than 960px; */
-  }
-  @media only screen and (min-width: 1440px) {
-      /* styles for browsers larger than 1440px; */
-  }
-  @media only screen and (min-width: 2000px) {
-      /* for sumo sized (mac) screens */
-  }
-  @media only screen and (max-device-width: 480px) {
-     /* styles for mobile browsers smaller than 480px; (iPhone) */
-  }
-  @media only screen and (device-width: 768px) {
-     /* default iPad screens */
-  }
-  /* different techniques for iPad screening */
-  @media only screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:portrait) {
-    /* For portrait layouts only */
-  }
-
-  @media only screen and (min-device-width: 481px) and (max-device-width: 1024px) and (orientation:landscape) {
-    /* For landscape layouts only */
+    line-height: 1.4;
   }
 </style>

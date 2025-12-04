@@ -1,23 +1,12 @@
 {
-  "emulators": {
-    "dataconnect": {
-      "dataDir": "dataconnect/.dataconnect/pgliteData",
-      "port": 9399
-    },
-    "ui": {
-      "enabled": true
-    },
-    "singleProjectMode": true
-  },
-  "dataconnect": {
-    "source": "dataconnect"
-  },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+
   "hosting": {
-    "public": "dist",
+    "site": "reg-internal-app",
+    "public": "dist/spa",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -30,14 +19,8 @@
       }
     ]
   },
+
   "storage": {
     "rules": "storage.rules"
-  },
-  "remoteconfig": {
-    "template": "remoteconfig.template.json"
-  },
-  "extensions": {},
-  "database": {
-    "rules": "database.rules.json"
   }
 }

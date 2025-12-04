@@ -1,5 +1,14 @@
 {
   "projects": {
     "default": "reg-internal-app"
+  },
+  "targets": {
+    "reg-internal-app": {
+      "hosting": {
+        "reg-internal-app": [
+          "reg-internal-app"
+        ]
+      }
+    }
   }
 }
