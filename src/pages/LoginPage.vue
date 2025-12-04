@@ -54,12 +54,12 @@
          <q-btn class="full-width fredoka" color="primary" label="Login" rounded
           type="submit"></q-btn>
 
-         <!-- <div class="q-mt-lg">
+         <div class="q-mt-lg">
           <div class="q-mt-sm">
            Don't have an account yet?
            <router-link class="text-primary" to="/register">Register</router-link>
           </div>
-         </div> -->
+         </div>
         </div>
        </q-form>
       </q-card-section>
@@ -98,44 +98,13 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import login from 'src/firebase/firebase-login'
 import { useRouter } from 'vue-router'
-const router = useRouter()
+import { Loading, Notify } from 'quasar'
+import { auth } from 'src/firebase/index.js'
 
-// export default {
-//   data() {
-//     return {
-//       email: "",
-//       password: "",
-//     };
-//   },
-//   methods: {
-//     onLogin() {
-//       if (this.email && this.password) {
-//         // Replace with your login logic
-//         console.log("Logging in with", this.email, this.password);
-//       } else {
-//         this.$q.notify({
-//           type: "negative",
-//           message: "Please fill in all fields.",
-//         });
-//       }
-//     },
-//     onForgotPassword() {
-//       this.$q.notify({
-//         type: "info",
-//         message: "Forgot Password clicked.",
-//       });
-//     },
-//     onSignUp() {
-//       this.$q.notify({
-//         type: "info",
-//         message: "Sign Up clicked.",
-//       });
-//     },
-//   },
-// };
+const router = useRouter()
 
 const user = reactive({
  email: null,
@@ -144,54 +113,40 @@ const user = reactive({
 
 const form = ref(null);
 
+// Check if user is already authenticated on component mount
+onMounted(() => {
+  const unsubscribe = auth.onAuthStateChanged((authUser) => {
+    if (authUser) {
+      // User is already logged in, redirect to home
+      router.push('/home')
+    }
+    // Unsubscribe from listener after initial check
+    unsubscribe()
+  })
+})
+
 const submit = async () => {
  if (form.value.validate()) {
   try {
-   await login(user);
-    // console.log("Hi "+user.email + " You are logged in...")
-   router.push('/home');
+   Loading.show()
+   const result = await login(user)
+   Loading.hide()
+    console.log("User logged in successfully:", result.email);
+
+   // Reset form and navigate
+   form.value.reset()
+   router.push('/home')
   } catch (err) {
-    console.error("An error occurred:", err);
+   Loading.hide()
+   console.error("An error occurred:", err)
+   Notify.create({
+     type: 'negative',
+     message: err?.message || String(err)
+   })
   }
  }
 }
-
 </script>
-<!-- <script>
-export default {
-  data() {
-    return {
-      email: "",
-      password: "",
-    };
-  },
-  methods: {
-    onLogin() {
-      if (this.email && this.password) {
-        // Replace with your login logic
-        console.log("Logging in with", this.email, this.password);
-      } else {
-        this.$q.notify({
-          type: "negative",
-          message: "Please fill in all fields.",
-        });
-      }
-    },
-    onForgotPassword() {
-      this.$q.notify({
-        type: "info",
-        message: "Forgot Password clicked.",
-      });
-    },
-    onSignUp() {
-      this.$q.notify({
-        type: "info",
-        message: "Sign Up clicked.",
-      });
-    },
-  },
-};
-</script> -->
 
 <style scoped>
 .q-card {

@@ -39,8 +39,9 @@
         <q-input v-model="user.password" label="Password" name="password" type="password" />
 
         <div>
-         <q-btn class="full-width fredoka" color="primary" label="Register" rounded
+         <q-btn class="full-width fredoka" color="primary" label="Create User" rounded
           type="submit"></q-btn>
+          <!-- <q-btn class="full-width fredoka" label="Create User" color="primary" @click="signUpUser" /> -->
 
          <div class="q-mt-lg">
           <div class="q-mt-sm">
@@ -60,6 +61,10 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import registerUser from 'src/firebase/firebase-register'
+
+const router = useRouter()
 
 const user = reactive({
  last_name: null,
@@ -72,7 +77,19 @@ const form = ref(null)
 
 const submit = async () => {
  if (form.value.validate()) {
-    console.log("Register Page...");
+   try {
+     console.log("Registering user...");
+     const result = await registerUser(user)
+     console.log("User registered successfully:", result)
+     
+     // Reset form after successful registration
+     form.value.reset()
+     
+     // Redirect to login page
+     router.push('/login')
+   } catch (error) {
+     console.error("Registration failed:", error)
+   }
  }
 }
 </script>
