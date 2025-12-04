@@ -166,6 +166,16 @@ const navigateTo = (path) => {
         <q-toolbar-title align="left">
           Chirala SRO Internal Application
         </q-toolbar-title>
+        
+        <!-- Home button (added before Dashboard) -->
+        <q-btn
+          flat
+          class="q-mr-md text-white"
+          icon="home"
+          label="Home"
+          @click="navigateTo('/home')"
+          v-if="currentUser"
+        />  
 
         <!-- Dashboard Menu -->
         <q-btn-dropdown
