@@ -133,7 +133,7 @@ const routes = [
     children: [
       { path: '', redirect: '/admin/users' },
       { path: 'users', component: () => import('src/pages/admin/UsersPage.vue') },
-      { path: 'reports', component: () => import('src/pages/admin/ReportsPage.vue') }
+      { path: 'clientreports', component: () => import('src/pages/admin/ReportsPage.vue') }
     ]
   }
   // ...existing code...

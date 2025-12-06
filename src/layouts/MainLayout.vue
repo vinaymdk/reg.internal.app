@@ -169,12 +169,12 @@ const showContactPopup = () => {
               </q-item-section>
             </q-item>
 
-            <q-item v-if="userRole?.admin" clickable v-close-popup @click="navigateTo('/admin/reports')">
+            <q-item v-if="userRole?.admin" clickable v-close-popup @click="navigateTo('/admin/clientreports')">
               <q-item-section avatar>
                 <q-icon name="assessment" />
               </q-item-section>
               <q-item-section>
-                <q-item-label>Reports</q-item-label>
+                <q-item-label>Clients Reports</q-item-label>
               </q-item-section>
             </q-item>
           </q-list>
@@ -204,7 +204,7 @@ const showContactPopup = () => {
           <a href="https://cardprimme.rs.ap.gov.in/PDE" target="_blank"><q-tab name="prime_2" label="Prime 2.0" /></a>
           <a href="https://prdcfms.apcfss.in:44300/sap/bc/ui5_ui5/sap/zfi_rcp_challan/index.html?sap-client=350" target="_blank"><q-tab name="prdcfms" label="CFMS Challan" /></a>
           <!-- Contact button with popup -->
-          <q-btn flat class="text-teal" label="Contact" @click="showContactPopup" />
+          <a href="#"><q-btn flat label="Contact" @click="showContactPopup" /></a>
         </q-tabs>
       </q-toolbar>
     </q-footer>
