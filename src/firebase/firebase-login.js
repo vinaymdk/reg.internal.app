@@ -1,27 +1,3 @@
-// import { auth } from './index.js'
-// import { signInWithEmailAndPassword } from 'firebase/auth'
-// import { Loading, Notify } from 'quasar'
-// const login = (data) => {
-//  return new Promise((resolve, reject) => {
-//   Loading.show()
-//   signInWithEmailAndPassword(auth, data.email, data.password).then(userCredential => {
-//    Loading.hide()
-//    Notify.create({
-//     type: 'positive',
-//     message: 'Hi '+userCredential.user.email+' Welcome to Chirala SRO Internal applications...'
-//    })
-//    resolve(userCredential.user)
-//   }).catch(err => {
-//    Loading.hide()
-//    Notify.create({
-//     type: 'negative',
-//     message: err.message
-//    })
-//    reject(err.message)
-//   })
-//  })
-// }
-// export default login
 import { auth } from './index.js'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { Loading, Notify } from 'quasar'
@@ -49,14 +25,14 @@ const login = async (data) => {
     const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password)
     Notify.create({
       type: 'positive',
-      message: `Welcome ${userCredential.user.displayName || userCredential.user.email}!`
+      message: `Welcome ${userCredential.user.displayName || userCredential.user.email}!`,
     })
     return userCredential.user
   } catch (err) {
     const message = mapAuthError(err)
     Notify.create({
       type: 'negative',
-      message
+      message,
     })
     throw err
   } finally {

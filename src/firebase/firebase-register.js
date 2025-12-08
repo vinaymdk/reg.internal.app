@@ -1,5 +1,6 @@
 import { auth } from './index.js'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+
 import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore' // { changed code }
 import { Loading, Notify } from 'quasar'
 
@@ -14,11 +15,12 @@ const registerUser = async (data) => {
 
     // update displayName
     await updateProfile(user, {
-      displayName: `${data.first_name} ${data.last_name}`.trim()
+      displayName: `${data.first_name} ${data.last_name}`.trim(),
     })
 
     // create/overwrite a document in the "users" collection using the user's uid as the doc id
-    await setDoc(doc(db, 'users', user.uid), { // { changed code }
+    await setDoc(doc(db, 'users', user.uid), {
+      // { changed code }
       uid: user.uid,
       firstName: data.first_name || null,
       lastName: data.last_name || null,
@@ -27,24 +29,25 @@ const registerUser = async (data) => {
       role: 'user', // default role
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      emailVerified: user.emailVerified || false
+      emailVerified: user.emailVerified || false,
     })
 
     Notify.create({
       type: 'positive',
-      message: `Welcome ${user.displayName || user.email}! Your account has been created.`
+      message: `Welcome ${user.displayName || user.email}! Your account has been created.`,
     })
 
     return user
   } catch (err) {
     // Better error message for permission issues
-    const msg = (err?.code === 'permission-denied')
-      ? 'Registration failed: insufficient Firestore permissions. Update your Firestore rules to allow users to create their own user document (users/{uid} where request.auth.uid == uid).'
-      : (err?.message || 'Registration failed')
+    const msg =
+      err?.code === 'permission-denied'
+        ? 'Registration failed: insufficient Firestore permissions. Update your Firestore rules to allow users to create their own user document (users/{uid} where request.auth.uid == uid).'
+        : err?.message || 'Registration failed'
 
     Notify.create({
       type: 'negative',
-      message: msg
+      message: msg,
     })
     throw err
   } finally {
