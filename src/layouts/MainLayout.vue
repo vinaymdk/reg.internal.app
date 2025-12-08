@@ -10,13 +10,13 @@ const currentUser = ref(null)
 const userRole = ref(null)
 const db = getFirestore()
 const showDialog = ref(false) // { changed code }
-
+const tab = ''
 
 // Get authorized user information and verify role from Firestore
 onMounted(async () => {
   try {
     const user = auth.currentUser
-    
+
     if (user) {
       // Store user information from Auth
       currentUser.value = {
@@ -24,15 +24,15 @@ onMounted(async () => {
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
-        emailVerified: user.emailVerified
+        emailVerified: user.emailVerified,
       }
-      
+
       console.log('Authenticated User:', currentUser.value)
-      
+
       // Fetch user role from Firestore 'users' collection
       const userDocRef = doc(db, 'users', user.uid)
       const userDocSnapshot = await getDoc(userDocRef)
-      
+
       if (userDocSnapshot.exists()) {
         const userData = userDocSnapshot.data()
         userRole.value = {
@@ -40,16 +40,16 @@ onMounted(async () => {
           role: userData.role || 'user',
           firstName: userData.firstName,
           lastName: userData.lastName,
-          createdAt: userData.createdAt
+          createdAt: userData.createdAt,
         }
-        
+
         console.log('User Data from Firestore:', userData)
         console.log('User Role:', userRole.value)
       } else {
         console.warn('User document not found in Firestore')
         userRole.value = {
           admin: false,
-          role: 'user'
+          role: 'user',
         }
       }
     } else {
@@ -94,8 +94,8 @@ const showContactPopup = () => {
           Chirala SRO Internal Application
         </q-toolbar-title> -->
 
-        <!-- Display current user email -->
-        <!-- <div class="q-mr-md">
+    <!-- Display current user email -->
+    <!-- <div class="q-mr-md">
           <span v-if="currentUser" class="text-white">{{ currentUser.email }}</span>
         </div>
 
@@ -105,10 +105,8 @@ const showContactPopup = () => {
 
     <q-header elevated>
       <q-toolbar class="bg-secondary text-white shadow-2">
-        <q-toolbar-title align="left">
-          Chirala SRO Internal Application
-        </q-toolbar-title>
-        
+        <q-toolbar-title align="left"> Chirala SRO Internal Application </q-toolbar-title>
+
         <!-- Home button (added before Dashboard) -->
         <q-btn
           flat
@@ -117,7 +115,7 @@ const showContactPopup = () => {
           label="Home"
           @click="navigateTo('/home')"
           v-if="currentUser"
-        />  
+        />
 
         <!-- Dashboard Menu -->
         <q-btn-dropdown
@@ -155,12 +153,17 @@ const showContactPopup = () => {
               <q-item-section>
                 <q-item-label>Settings</q-item-label>
               </q-item-section>
-            </q-item> 
+            </q-item>
 
             <q-separator /> -->
 
             <!-- Admin only menu items -->
-            <q-item v-if="userRole?.admin" clickable v-close-popup @click="navigateTo('/admin/users')">
+            <q-item
+              v-if="userRole?.admin"
+              clickable
+              v-close-popup
+              @click="navigateTo('/admin/users')"
+            >
               <q-item-section avatar>
                 <q-icon name="people" />
               </q-item-section>
@@ -169,7 +172,12 @@ const showContactPopup = () => {
               </q-item-section>
             </q-item>
 
-            <q-item v-if="userRole?.admin" clickable v-close-popup @click="navigateTo('/admin/clientreports')">
+            <q-item
+              v-if="userRole?.admin"
+              clickable
+              v-close-popup
+              @click="navigateTo('/admin/clientreports')"
+            >
               <q-item-section avatar>
                 <q-icon name="assessment" />
               </q-item-section>
@@ -193,16 +201,23 @@ const showContactPopup = () => {
       <router-view />
     </q-page-container>
 
-     <q-footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
+    <q-footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
       <q-toolbar>
-        <q-tabs
-          v-model="tab"
-          class="text-teal"
-        >
-          <a href="http://registration.ap.gov.in/" target="_blank"><q-tab name="igrs_ofc" label="IGRS - Official" /></a>
-          <a href="http://meebhoomi.ap.gov.in/" target="_blank"><q-tab name="meebhoomi" label="Meebhoomi" /></a>
-          <a href="https://cardprimme.rs.ap.gov.in/PDE" target="_blank"><q-tab name="prime_2" label="Prime 2.0" /></a>
-          <a href="https://prdcfms.apcfss.in:44300/sap/bc/ui5_ui5/sap/zfi_rcp_challan/index.html?sap-client=350" target="_blank"><q-tab name="prdcfms" label="CFMS Challan" /></a>
+        <q-tabs v-model="tab" class="text-teal">
+          <a href="http://registration.ap.gov.in/" target="_blank"
+            ><q-tab name="igrs_ofc" label="IGRS - Official"
+          /></a>
+          <a href="http://meebhoomi.ap.gov.in/" target="_blank"
+            ><q-tab name="meebhoomi" label="Meebhoomi"
+          /></a>
+          <a href="https://cardprimme.rs.ap.gov.in/PDE" target="_blank"
+            ><q-tab name="prime_2" label="Prime 2.0"
+          /></a>
+          <a
+            href="https://prdcfms.apcfss.in:44300/sap/bc/ui5_ui5/sap/zfi_rcp_challan/index.html?sap-client=350"
+            target="_blank"
+            ><q-tab name="prdcfms" label="CFMS Challan"
+          /></a>
           <!-- Contact button with popup -->
           <a href="#"><q-btn flat label="Contact" @click="showContactPopup" /></a>
         </q-tabs>
@@ -246,7 +261,6 @@ const showContactPopup = () => {
         </q-card-actions>
       </q-card>
     </q-dialog>
-
   </q-layout>
 </template>
 
@@ -268,15 +282,15 @@ a:hover {
 </style>
 
 <style type="text/css">
-  .logo-styl {
-    width: 180px;
-    padding: 8px;
-  }
-  .foot-about-content {
-    font-weight: 200;
-    padding: 15px;
-  }
-  .line-height {
-    line-height: 1.4;
-  }
+.logo-styl {
+  width: 180px;
+  padding: 8px;
+}
+.foot-about-content {
+  font-weight: 200;
+  padding: 15px;
+}
+.line-height {
+  line-height: 1.4;
+}
 </style>

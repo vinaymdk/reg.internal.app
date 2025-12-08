@@ -9,7 +9,7 @@
       <q-separator />
 
       <q-card-section>
-        <div class="row q-gutter-md" style="flex-wrap: nowrap;">
+        <div class="row q-gutter-md" style="flex-wrap: nowrap">
           <!-- Left: Clients List -->
           <div class="col-12 col-md-6">
             <q-card flat bordered>
@@ -188,7 +188,7 @@
               outlined
               required
               lazy-rules
-              :rules="[val => val && val.length > 0 || 'Name is required']"
+              :rules="[(val) => (val && val.length > 0) || 'Name is required']"
               class="q-mb-md"
             />
             <q-input
@@ -198,7 +198,7 @@
               outlined
               required
               lazy-rules
-              :rules="[val => val && val.length > 0 || 'Phone is required']"
+              :rules="[(val) => (val && val.length > 0) || 'Phone is required']"
               class="q-mb-md"
             />
             <q-input
@@ -209,7 +209,7 @@
               type="textarea"
               required
               lazy-rules
-              :rules="[val => val && val.length > 0 || 'Address is required']"
+              :rules="[(val) => (val && val.length > 0) || 'Address is required']"
               class="q-mb-md"
             />
             <div class="row q-gutter-sm">
@@ -245,10 +245,11 @@
               clearable
               lazy-rules
               :rules="[
-                val => val !== null && val !== undefined && val !== '' || 'Document type is required'
+                (val) =>
+                  (val !== null && val !== undefined && val !== '') || 'Document type is required',
               ]"
               class="q-mb-md"
-              @update:model-value="val => newDocument.docType = val"
+              @update:model-value="(val) => (newDocument.docType = val)"
             />
             <q-input
               v-model="newDocument.claimantName"
@@ -257,7 +258,7 @@
               outlined
               required
               lazy-rules
-              :rules="[val => val && val.length > 0 || 'Claimant name is required']"
+              :rules="[(val) => (val && val.length > 0) || 'Claimant name is required']"
               class="q-mb-md"
             />
             <q-input
@@ -267,7 +268,7 @@
               outlined
               required
               lazy-rules
-              :rules="[val => val && val.length > 0 || 'Executant name is required']"
+              :rules="[(val) => (val && val.length > 0) || 'Executant name is required']"
               class="q-mb-md"
             />
             <q-input
@@ -278,7 +279,7 @@
               type="textarea"
               required
               lazy-rules
-              :rules="[val => val && val.length > 0 || 'Property address is required']"
+              :rules="[(val) => (val && val.length > 0) || 'Property address is required']"
               class="q-mb-md"
             />
             <!-- { changed code } - Date field validation fix -->
@@ -290,7 +291,7 @@
               type="date"
               required
               lazy-rules
-              :rules="[val => val && val !== '' || 'Registration date is required']"
+              :rules="[(val) => (val && val !== '') || 'Registration date is required']"
               class="q-mb-md"
             />
             <!-- { changed code } - File field validation fix -->
@@ -302,7 +303,7 @@
               required
               accept=".pdf,.doc,.docx,.xlsx,.xls"
               lazy-rules
-              :rules="[val => val !== null || 'File is required']"
+              :rules="[(val) => val !== null || 'File is required']"
               class="q-mb-md"
               @rejected="onFileRejected"
             />
@@ -325,7 +326,7 @@ import {
   getDocs,
   query,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
 } from 'firebase/firestore'
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { Loading, Notify } from 'quasar'
@@ -354,14 +355,14 @@ const docTypeOptions = [
   'Partition',
   'Release',
   'Sale',
-  'GPA'
+  'GPA',
 ]
 
 // New client form
 const newClient = ref({
   name: '',
   phone: '',
-  address: ''
+  address: '',
 })
 
 // New document form
@@ -371,7 +372,7 @@ const newDocument = ref({
   executantName: '',
   propertyAddress: '',
   regDate: '',
-  file: null
+  file: null,
 })
 
 // Table columns
@@ -379,7 +380,7 @@ const clientColumns = [
   { name: 'name', label: 'Name', field: 'name', sortable: true, align: 'left' },
   { name: 'phone', label: 'Phone', field: 'phone', sortable: true, align: 'left' },
   { name: 'address', label: 'Address', field: 'address', align: 'left' },
-  { name: 'action', label: 'View', align: 'center' }
+  { name: 'action', label: 'View', align: 'center' },
 ]
 
 const documentColumns = [
@@ -388,14 +389,14 @@ const documentColumns = [
   { name: 'executantName', label: 'Exe. Name', field: 'executantName', align: 'left' },
   { name: 'propertyAddress', label: 'Property Address', field: 'propertyAddress', align: 'left' },
   { name: 'regDate', label: 'Date of Reg.', field: 'regDate', align: 'center' },
-  { name: 'docNo', label: 'Doc. No.', field: 'docNo', align: 'center' }
+  { name: 'docNo', label: 'Doc. No.', field: 'docNo', align: 'center' },
 ]
 
 // Computed
 const selectedClientDocuments = computed(() => {
   if (!selectedClient.value) return []
   const selId = selectedClient.value.id
-  return documents.value.filter(d => {
+  return documents.value.filter((d) => {
     if (!d.clientId) return false
     // handle string id or DocumentReference-like objects
     if (typeof d.clientId === 'string') return d.clientId === selId
@@ -408,7 +409,13 @@ const selectedClientDocuments = computed(() => {
 // Helpers
 const initials = (name) => {
   if (!name) return '?'
-  return name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 }
 
 const formatDate = (dateStr) => {
@@ -422,7 +429,7 @@ const fetchClients = async () => {
   try {
     const q = query(collection(db, 'clients'))
     const snap = await getDocs(q)
-    clients.value = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    clients.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
   } catch (err) {
     console.error('Failed to fetch clients:', err)
     Notify.create({ type: 'negative', message: 'Failed to load clients' })
@@ -437,7 +444,7 @@ const fetchDocuments = async () => {
   try {
     const q = query(collection(db, 'documents'))
     const snap = await getDocs(q)
-    documents.value = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    documents.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
   } catch (err) {
     console.error('Failed to fetch documents:', err)
     Notify.create({ type: 'negative', message: 'Failed to load documents' })
@@ -464,7 +471,7 @@ const createClient = async () => {
       name: newClient.value.name,
       phone: newClient.value.phone,
       address: newClient.value.address,
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     })
 
     Notify.create({ type: 'positive', message: 'Client created successfully' })
@@ -483,7 +490,7 @@ const createClient = async () => {
 const onFileRejected = () => {
   Notify.create({
     type: 'negative',
-    message: `File rejected. Allowed types: PDF, DOC, DOCX, XLSX, XLS`
+    message: `File rejected. Allowed types: PDF, DOC, DOCX, XLSX, XLS`,
   })
 }
 
@@ -495,7 +502,7 @@ const resetDocumentForm = () => {
     executantName: '',
     propertyAddress: '',
     regDate: '',
-    file: null
+    file: null,
   }
   if (addDocumentForm.value) {
     addDocumentForm.value.resetValidation()
@@ -513,12 +520,19 @@ const createDocument = async () => {
 
   // Guard: require client id and document type
   if (!selectedClient.value.id) {
-    Notify.create({ type: 'negative', message: 'Selected client is invalid. Please re-select client.' })
+    Notify.create({
+      type: 'negative',
+      message: 'Selected client is invalid. Please re-select client.',
+    })
     return
   }
 
   // { changed code } - Enhanced docType validation
-  if (!newDocument.value.docType || newDocument.value.docType === '' || newDocument.value.docType === null) {
+  if (
+    !newDocument.value.docType ||
+    newDocument.value.docType === '' ||
+    newDocument.value.docType === null
+  ) {
     Notify.create({ type: 'negative', message: 'Please select a document type' })
     return
   }
@@ -539,11 +553,12 @@ const createDocument = async () => {
     if (newDocument.value.file) {
       const fileRef = storageRef(
         storage,
-        `documents/${selectedClient.value.id}/${Date.now()}_${newDocument.value.file.name}`
+        `documents/${selectedClient.value.id}/${Date.now()}_${newDocument.value.file.name}`,
       )
       await uploadBytes(fileRef, newDocument.value.file)
       downloadURL = await getDownloadURL(fileRef)
     }
+    debugger
 
     // Create document record
     await addDoc(collection(db, 'documents'), {
@@ -556,7 +571,7 @@ const createDocument = async () => {
       docNo: `DOC-${Date.now()}`,
       fileUrl: downloadURL,
       fileName: newDocument.value.file?.name || '',
-      createdAt: serverTimestamp()
+      createdAt: serverTimestamp(),
     })
 
     Notify.create({ type: 'positive', message: 'Document added successfully' })
@@ -604,8 +619,12 @@ onMounted(() => {
 }
 
 /* New: client header layout and styles */
-.client-header { gap: 12px; }
-.client-meta { align-items: center; }
+.client-header {
+  gap: 12px;
+}
+.client-meta {
+  align-items: center;
+}
 .client-name {
   font-size: 1.15rem;
   font-weight: 700;
@@ -624,8 +643,15 @@ onMounted(() => {
 
 /* ensure avatar and meta align on narrow screens */
 @media (max-width: 600px) {
-  .client-header { flex-direction: column; align-items: flex-start; }
-  .client-meta { width: 100%; justify-content: flex-start; gap: 8px; }
+  .client-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .client-meta {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
 }
 </style>
 <!-- Seperate the script which is related to firebase only. Use ... related with firebase of client side and documents side -->
