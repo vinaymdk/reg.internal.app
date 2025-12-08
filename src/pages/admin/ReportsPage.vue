@@ -46,18 +46,44 @@
                     </q-td>
                   </template>
 
-                  <template v-slot:body-cell-action="props">
+                  <template v-slot:body-cell-view="props">
                     <q-td :props="props" class="text-center">
                       <q-btn
                         flat
-                        round
                         dense
-                        icon="person"
-                        size="md"
+                        round
+                        icon="visibility"
                         color="primary"
-                        class="action-btn"
+                        size="sm"
                         @click.stop="selectClient(props.row)"
                         aria-label="View client"
+                      />
+                    </q-td>
+                  </template>
+
+                  <template v-slot:body-cell-actions="props">
+                    <q-td :props="props" class="text-center">
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="edit"
+                        color="primary"
+                        size="sm"
+                        class="q-mx-xs"
+                        @click.stop="openEditClient(props.row)"
+                        aria-label="Edit client"
+                      />
+                      <q-btn
+                        flat
+                        dense
+                        round
+                        icon="delete"
+                        color="negative"
+                        size="sm"
+                        class="q-mx-xs"
+                        @click.stop="deleteClient(props.row)"
+                        aria-label="Delete client"
                       />
                     </q-td>
                   </template>
@@ -315,6 +341,43 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="showEditClientDialog" position="standard">
+      <q-card style="min-width: 400px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Edit Client</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section>
+          <q-form @submit.prevent="saveEditClient">
+            <q-input
+              v-model="editingClient.name"
+              label="Client Name"
+              dense
+              outlined
+              class="q-mb-md"
+            />
+            <q-input v-model="editingClient.phone" label="Phone" dense outlined class="q-mb-md" />
+            <q-input
+              v-model="editingClient.address"
+              label="Address"
+              dense
+              outlined
+              type="textarea"
+              class="q-mb-md"
+            />
+            <div class="row q-gutter-sm">
+              <q-btn label="Save" color="primary" type="submit" :loading="loadingClient" />
+              <q-btn flat label="Cancel" v-close-popup />
+            </div>
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -326,6 +389,9 @@ import {
   getDocs,
   query,
   addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
   serverTimestamp,
 } from 'firebase/firestore'
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
@@ -345,6 +411,13 @@ const loadingClient = ref(false)
 const loadingDocument = ref(false)
 const addClientForm = ref(null)
 const addDocumentForm = ref(null)
+const showEditClientDialog = ref(false)
+const editingClient = ref({
+  id: '',
+  name: '',
+  phone: '',
+  address: '',
+})
 
 // Document types dropdown list
 const docTypeOptions = [
@@ -379,8 +452,8 @@ const newDocument = ref({
 const clientColumns = [
   { name: 'name', label: 'Name', field: 'name', sortable: true, align: 'left' },
   { name: 'phone', label: 'Phone', field: 'phone', sortable: true, align: 'left' },
-  { name: 'address', label: 'Address', field: 'address', align: 'left' },
-  { name: 'action', label: 'View', align: 'center' },
+  { name: 'view', label: 'View', field: 'view', align: 'center', style: 'width: 90px' },
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'center', style: 'width: 120px' },
 ]
 
 const documentColumns = [
@@ -486,6 +559,55 @@ const createClient = async () => {
   }
 }
 
+const openEditClient = (client) => {
+  editingClient.value = {
+    id: client.id,
+    name: client.name || '',
+    phone: client.phone || '',
+    address: client.address || '',
+  }
+  showEditClientDialog.value = true
+}
+
+const saveEditClient = async () => {
+  if (!editingClient.value.id) return
+  loadingClient.value = true
+  try {
+    await updateDoc(doc(db, 'clients', editingClient.value.id), {
+      name: editingClient.value.name,
+      phone: editingClient.value.phone,
+      address: editingClient.value.address,
+      updatedAt: serverTimestamp(),
+    })
+    Notify.create({ type: 'positive', message: 'Client updated successfully' })
+    showEditClientDialog.value = false
+    await fetchClients()
+  } catch (err) {
+    console.error('Failed to update client:', err)
+    Notify.create({ type: 'negative', message: 'Failed to update client' })
+  } finally {
+    loadingClient.value = false
+  }
+}
+
+const deleteClient = async (client) => {
+  if (!client?.id) return
+  loadingClient.value = true
+  try {
+    await deleteDoc(doc(db, 'clients', client.id))
+    Notify.create({ type: 'positive', message: 'Client deleted' })
+    if (selectedClient.value?.id === client.id) {
+      selectedClient.value = null
+    }
+    await fetchClients()
+  } catch (err) {
+    console.error('Failed to delete client:', err)
+    Notify.create({ type: 'negative', message: 'Failed to delete client' })
+  } finally {
+    loadingClient.value = false
+  }
+}
+
 // { changed code } - Handle file rejection (remove unused parameter)
 const onFileRejected = () => {
   Notify.create({
@@ -558,7 +680,6 @@ const createDocument = async () => {
       await uploadBytes(fileRef, newDocument.value.file)
       downloadURL = await getDownloadURL(fileRef)
     }
-    debugger
 
     // Create document record
     await addDoc(collection(db, 'documents'), {
@@ -639,6 +760,10 @@ onMounted(() => {
   gap: 6px;
   font-size: 0.95rem;
   color: #0b69ff;
+}
+
+.action-buttons {
+  gap: 4px;
 }
 
 /* ensure avatar and meta align on narrow screens */

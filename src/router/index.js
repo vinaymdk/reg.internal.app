@@ -3,11 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from 'src/pages/LoginPage.vue'
 import RegisterPage from 'src/pages/RegisterPage.vue'
 import HomePage from 'src/pages/IndexPage.vue'
-import { auth } from 'src/firebase/index' // Import Firebase Auth
-// { changed code }
-import { getFirestore, doc, getDoc } from 'firebase/firestore'
-
-const db = getFirestore()
+import { waitForAuth, getUserRole } from 'src/firebase'
 
 const routes = [
   {
@@ -38,6 +34,10 @@ const routes = [
       { path: 'clientreports', component: () => import('src/pages/admin/ReportsPage.vue') },
     ],
   },
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
   // ...existing code...
 ]
 
@@ -46,16 +46,6 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
-
-// Helper: wait for Firebase Auth to initialize and return current user (or null)
-const waitForAuth = () => {
-  return new Promise((resolve) => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      unsubscribe()
-      resolve(user)
-    })
-  })
-}
 
 // ✅ Navigation Guard to Protect Routes and access authenticated user info
 router.beforeEach(async (to, from, next) => {
@@ -79,17 +69,11 @@ router.beforeEach(async (to, from, next) => {
       return next('/')
     }
 
-    // { changed code }
-    // Check admin role from Firestore 'users' collection instead of ID token claims
     if (to.meta.requiresAdmin) {
       if (!user) return next('/')
       try {
-        const userDoc = await getDoc(doc(db, 'users', user.uid))
-        const userData = userDoc.exists() ? userDoc.data() : null
-        const isAdmin = userData?.role === 'admin'
-
-        if (!isAdmin) {
-          // Authenticated but not admin -> redirect to home
+        const role = (await getUserRole(user.uid)) || null
+        if (role !== 'admin') {
           return next('/home')
         }
       } catch (err) {

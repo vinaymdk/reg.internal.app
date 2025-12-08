@@ -1,16 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { auth } from 'src/firebase/index.js'
-import { getFirestore, doc, getDoc } from 'firebase/firestore'
-import signOut from 'src/firebase/firebase-signout.js'
+import { auth, getUserRole, logout as firebaseLogout, db } from 'src/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 const loading = ref(false)
 const router = useRouter()
 const currentUser = ref(null)
 const userRole = ref(null)
-const db = getFirestore()
 const showDialog = ref(false) // { changed code }
-const tab = ''
+const tab = ref('')
 
 // Get authorized user information and verify role from Firestore
 onMounted(async () => {
@@ -30,28 +28,21 @@ onMounted(async () => {
       console.log('Authenticated User:', currentUser.value)
 
       // Fetch user role from Firestore 'users' collection
+      const role = await getUserRole(user.uid)
       const userDocRef = doc(db, 'users', user.uid)
       const userDocSnapshot = await getDoc(userDocRef)
+      const userData = userDocSnapshot.exists() ? userDocSnapshot.data() : null
 
-      if (userDocSnapshot.exists()) {
-        const userData = userDocSnapshot.data()
-        userRole.value = {
-          admin: userData.role === 'admin',
-          role: userData.role || 'user',
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          createdAt: userData.createdAt,
-        }
-
-        console.log('User Data from Firestore:', userData)
-        console.log('User Role:', userRole.value)
-      } else {
-        console.warn('User document not found in Firestore')
-        userRole.value = {
-          admin: false,
-          role: 'user',
-        }
+      userRole.value = {
+        admin: role === 'admin',
+        role: role || 'user',
+        firstName: userData?.firstName,
+        lastName: userData?.lastName,
+        createdAt: userData?.createdAt,
       }
+
+      console.log('User Data from Firestore:', userData)
+      console.log('User Role:', userRole.value)
     } else {
       console.log('No authenticated user found')
       router.push('/')
@@ -62,10 +53,10 @@ onMounted(async () => {
   }
 })
 
-const logout = async () => {
+const handleLogout = async () => {
   loading.value = true
   try {
-    await signOut()
+    await firebaseLogout()
     currentUser.value = null
     userRole.value = null
     router.push('/')
@@ -99,7 +90,7 @@ const showContactPopup = () => {
           <span v-if="currentUser" class="text-white">{{ currentUser.email }}</span>
         </div>
 
-        <div><q-btn round icon="logout" @click="logout" color="secondary" /></div>
+        <div><q-btn round icon="logout" @click="handleLogout" color="secondary" /></div>
       </q-toolbar>
     </q-header> -->
 
@@ -193,7 +184,7 @@ const showContactPopup = () => {
           <span v-if="currentUser" class="text-white">{{ currentUser.email }}</span>
         </div>
 
-        <div><q-btn round icon="logout" @click="logout" color="secondary" /></div>
+        <div><q-btn round icon="logout" @click="handleLogout" color="secondary" /></div>
       </q-toolbar>
     </q-header>
 

@@ -71,7 +71,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import registerUser from 'src/firebase/firebase-register'
+import { registerWithEmail } from 'src/firebase'
 
 const router = useRouter()
 
@@ -88,7 +88,7 @@ const submit = async () => {
   if (form.value.validate()) {
     try {
       console.log('Registering user...')
-      const result = await registerUser(user)
+      const result = await registerWithEmail(user)
       console.log('User registered successfully:', result)
 
       // Reset form after successful registration

@@ -13,59 +13,59 @@
       <q-separator />
 
       <q-card-section>
-        <div class="row q-gutter-md" style="flex-wrap: nowrap;">
+        <div class="row q-gutter-md" style="flex-wrap: nowrap">
           <!-- Left: New user registration -->
           <div class="col-12 col-md-4">
             <q-card flat bordered class="q-pa-sm">
               <div class="text-subtitle1 q-mb-md">Register New User</div>
 
               <q-form @submit.prevent="onCreateUser" ref="formRef">
-                <q-input 
-                  v-model="newUser.first_name" 
-                  label="First name" 
-                  dense 
-                  outlined 
-                  required 
-                  lazy-rules
-                  :rules="[val => val && val.length > 0 || 'First name is required']"
-                />
-                <q-input 
-                  v-model="newUser.last_name" 
-                  label="Last name" 
-                  dense 
-                  outlined 
-                  class="q-mt-sm" 
+                <q-input
+                  v-model="newUser.first_name"
+                  label="First name"
+                  dense
+                  outlined
                   required
                   lazy-rules
-                  :rules="[val => val && val.length > 0 || 'Last name is required']"
+                  :rules="[(val) => (val && val.length > 0) || 'First name is required']"
                 />
-                <q-input 
-                  v-model="newUser.email" 
-                  label="Email" 
-                  dense 
-                  outlined 
-                  class="q-mt-sm" 
-                  required 
+                <q-input
+                  v-model="newUser.last_name"
+                  label="Last name"
+                  dense
+                  outlined
+                  class="q-mt-sm"
+                  required
+                  lazy-rules
+                  :rules="[(val) => (val && val.length > 0) || 'Last name is required']"
+                />
+                <q-input
+                  v-model="newUser.email"
+                  label="Email"
+                  dense
+                  outlined
+                  class="q-mt-sm"
+                  required
                   type="email"
                   lazy-rules
                   :rules="[
-                    val => val && val.length > 0 || 'Email is required',
-                    val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Invalid email format'
+                    (val) => (val && val.length > 0) || 'Email is required',
+                    (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Invalid email format',
                   ]"
                 />
                 <!-- { changed code } Password field with hide/show toggle -->
-                <q-input 
-                  v-model="newUser.password" 
-                  label="Password" 
-                  dense 
-                  outlined 
-                  class="q-mt-sm" 
-                  required 
+                <q-input
+                  v-model="newUser.password"
+                  label="Password"
+                  dense
+                  outlined
+                  class="q-mt-sm"
+                  required
                   :type="showPassword ? 'text' : 'password'"
                   lazy-rules
                   :rules="[
-                    val => val && val.length > 0 || 'Password is required',
-                    val => val && val.length >= 6 || 'Password must be at least 6 characters'
+                    (val) => (val && val.length > 0) || 'Password is required',
+                    (val) => (val && val.length >= 6) || 'Password must be at least 6 characters',
                   ]"
                 >
                   <template v-slot:append>
@@ -79,18 +79,8 @@
 
                 <div class="row q-mt-md">
                   <div class="col">
-                    <q-btn 
-                      label="Create" 
-                      color="primary" 
-                      type="submit"
-                      :loading="loading" 
-                    />
-                    <q-btn 
-                      flat 
-                      label="Reset" 
-                      class="q-ml-sm" 
-                      @click="resetForm" 
-                    />
+                    <q-btn label="Create" color="primary" type="submit" :loading="loading" />
+                    <q-btn flat label="Reset" class="q-ml-sm" @click="resetForm" />
                   </div>
                 </div>
               </q-form>
@@ -122,7 +112,11 @@
                       </q-avatar>
                       <div class="user-name">
                         <div class="name-main">
-                          {{ props.row.displayName || [props.row.firstName, props.row.lastName].filter(Boolean).join(' ') || '-' }}
+                          {{
+                            props.row.displayName ||
+                            [props.row.firstName, props.row.lastName].filter(Boolean).join(' ') ||
+                            '-'
+                          }}
                         </div>
                         <div class="text-subtitle2 text-ellipsis email-sm">
                           {{ props.row.email || '-' }}
@@ -151,6 +145,30 @@
                     </q-chip>
                   </q-td>
                 </template>
+
+                <template v-slot:body-cell-actions="props">
+                  <q-td :props="props" class="text-center">
+                    <q-btn
+                      flat
+                      dense
+                      round
+                      icon="edit"
+                      color="primary"
+                      @click.stop="openEditUser(props.row)"
+                      aria-label="Edit user"
+                    />
+                    <q-btn
+                      flat
+                      dense
+                      round
+                      icon="delete"
+                      color="negative"
+                      class="q-ml-xs"
+                      @click.stop="deleteUser(props.row)"
+                      aria-label="Delete user"
+                    />
+                  </q-td>
+                </template>
               </q-table>
             </q-card>
           </div>
@@ -158,6 +176,49 @@
       </q-card-section>
     </q-card>
   </q-page>
+
+  <q-dialog v-model="showEditDialog" position="standard">
+    <q-card style="min-width: 400px">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">Edit User</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+
+      <q-separator />
+
+      <q-card-section>
+        <q-form @submit.prevent="saveEditUser">
+          <q-input
+            v-model="editingUser.firstName"
+            label="First name"
+            dense
+            outlined
+            class="q-mb-sm"
+          />
+          <q-input
+            v-model="editingUser.lastName"
+            label="Last name"
+            dense
+            outlined
+            class="q-mb-sm"
+          />
+          <q-select
+            v-model="editingUser.role"
+            :options="['user', 'admin']"
+            label="Role"
+            dense
+            outlined
+            class="q-mb-md"
+          />
+          <div class="row q-gutter-sm">
+            <q-btn label="Save" color="primary" type="submit" :loading="loading" />
+            <q-btn flat label="Cancel" v-close-popup />
+          </div>
+        </q-form>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -172,7 +233,9 @@ import {
   doc,
   getDoc,
   setDoc,
-  serverTimestamp
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
 } from 'firebase/firestore'
 import { Loading, Notify } from 'quasar'
 import { createUserWithEmailAndPassword } from 'firebase/auth'
@@ -186,19 +249,40 @@ const loading = ref(false)
 const formRef = ref(null)
 const adminUser = ref(null)
 const showPassword = ref(false) // { changed code } - Show/hide password state
+const showEditDialog = ref(false)
+const editingUser = ref({
+  uid: '',
+  firstName: '',
+  lastName: '',
+  role: 'user',
+})
 
 const newUser = ref({
   first_name: '',
   last_name: '',
   email: '',
-  password: ''
+  password: '',
 })
 
 const columns = [
   { name: 'displayName', label: 'Name', field: 'displayName', sortable: true, align: 'left' },
-  { name: 'role', label: 'Role', field: 'role', sortable: true, align: 'center', style: 'width: 120px' },
+  {
+    name: 'role',
+    label: 'Role',
+    field: 'role',
+    sortable: true,
+    align: 'center',
+    style: 'width: 120px',
+  },
   { name: 'uid', label: 'UID', field: 'uid', align: 'center', style: 'width: 200px' },
-  { name: 'createdAt', label: 'Created At', field: 'createdAt', align: 'center', style: 'width: 180px' }
+  {
+    name: 'createdAt',
+    label: 'Created At',
+    field: 'createdAt',
+    align: 'center',
+    style: 'width: 180px',
+  },
+  { name: 'actions', label: 'Actions', field: 'actions', align: 'center', style: 'width: 140px' },
 ]
 
 const formatDate = (ts) => {
@@ -213,7 +297,7 @@ const fetchUsers = async () => {
   try {
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'))
     const snap = await getDocs(q)
-    users.value = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    users.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
   } catch (err) {
     console.error('Failed to fetch users:', err)
     Notify.create({ type: 'negative', message: err?.message || 'Failed to load users' })
@@ -234,7 +318,10 @@ const checkAndLoad = async (firebaseUser) => {
     const userSnap = await getDoc(userDocRef)
 
     if (!userSnap.exists()) {
-      Notify.create({ type: 'negative', message: 'User document not found. Contact admin or re-register.' })
+      Notify.create({
+        type: 'negative',
+        message: 'User document not found. Contact admin or re-register.',
+      })
       return
     }
 
@@ -250,7 +337,9 @@ const checkAndLoad = async (firebaseUser) => {
     await fetchUsers()
   } catch (err) {
     console.error('Error checking role or fetching users:', err)
-    const msg = err?.message || 'Failed to verify role / load users. Check Firestore rules and ensure your user doc has role: "admin".'
+    const msg =
+      err?.message ||
+      'Failed to verify role / load users. Check Firestore rules and ensure your user doc has role: "admin".'
     Notify.create({ type: 'negative', message: msg })
   } finally {
     Loading.hide()
@@ -267,7 +356,13 @@ onMounted(() => {
 const initials = (row) => {
   const name = row?.displayName || [row?.firstName, row?.lastName].filter(Boolean).join(' ')
   if (!name) return '?'
-  return name.split(' ').map(n => n[0]).filter(Boolean).slice(0,2).join('').toUpperCase()
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 }
 
 const onCreateUser = async () => {
@@ -285,7 +380,7 @@ const onCreateUser = async () => {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       newUser.value.email,
-      newUser.value.password
+      newUser.value.password,
     )
     const newFirebaseUser = userCredential.user
 
@@ -298,7 +393,7 @@ const onCreateUser = async () => {
       role: 'user',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      emailVerified: newFirebaseUser.emailVerified || false
+      emailVerified: newFirebaseUser.emailVerified || false,
     })
 
     if (adminUser.value) {
@@ -307,7 +402,7 @@ const onCreateUser = async () => {
 
     Notify.create({
       type: 'positive',
-      message: `User ${newUser.value.email} created successfully.`
+      message: `User ${newUser.value.email} created successfully.`,
     })
 
     resetForm()
@@ -330,6 +425,57 @@ const resetForm = () => {
   showPassword.value = false // { changed code } - Reset password visibility
   formRef.value?.resetValidation?.()
 }
+
+const openEditUser = (row) => {
+  editingUser.value = {
+    uid: row.uid,
+    firstName: row.firstName || '',
+    lastName: row.lastName || '',
+    role: row.role || 'user',
+  }
+  showEditDialog.value = true
+}
+
+const saveEditUser = async () => {
+  if (!editingUser.value.uid) return
+  loading.value = true
+  Loading.show()
+  try {
+    await updateDoc(doc(db, 'users', editingUser.value.uid), {
+      firstName: editingUser.value.firstName || null,
+      lastName: editingUser.value.lastName || null,
+      displayName: `${editingUser.value.firstName} ${editingUser.value.lastName}`.trim(),
+      role: editingUser.value.role || 'user',
+      updatedAt: serverTimestamp(),
+    })
+    Notify.create({ type: 'positive', message: 'User updated' })
+    showEditDialog.value = false
+    await fetchUsers()
+  } catch (err) {
+    console.error('Failed to update user:', err)
+    Notify.create({ type: 'negative', message: err?.message || 'Failed to update user' })
+  } finally {
+    loading.value = false
+    Loading.hide()
+  }
+}
+
+const deleteUser = async (row) => {
+  if (!row?.uid) return
+  loading.value = true
+  Loading.show()
+  try {
+    await deleteDoc(doc(db, 'users', row.uid))
+    Notify.create({ type: 'positive', message: 'User deleted' })
+    await fetchUsers()
+  } catch (err) {
+    console.error('Failed to delete user:', err)
+    Notify.create({ type: 'negative', message: err?.message || 'Failed to delete user' })
+  } finally {
+    loading.value = false
+    Loading.hide()
+  }
+}
 </script>
 
 <style scoped>
@@ -345,7 +491,7 @@ const resetForm = () => {
   background: var(--q-table-header-bg);
   color: #222;
   font-weight: 700;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   text-align: center;
 }
 
@@ -391,7 +537,7 @@ const resetForm = () => {
 
 /* avatar style */
 .users-table .q-avatar {
-  box-shadow: 0 1px 2px rgba(16,24,40,0.06);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
   font-weight: 700;
 }
 

@@ -110,10 +110,9 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import login from 'src/firebase/firebase-login'
+import { loginWithEmail, auth } from 'src/firebase'
 import { useRouter } from 'vue-router'
 import { Loading, Notify } from 'quasar'
-import { auth } from 'src/firebase/index.js'
 
 const router = useRouter()
 
@@ -140,7 +139,7 @@ const submit = async () => {
   if (form.value.validate()) {
     try {
       Loading.show()
-      const result = await login(user)
+      const result = await loginWithEmail(user.email, user.password)
       Loading.hide()
       console.log('User logged in successfully:', result.email)
 
