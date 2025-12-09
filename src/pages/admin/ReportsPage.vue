@@ -451,7 +451,7 @@ const newDocument = ref({
 // Table columns
 const clientColumns = [
   { name: 'name', label: 'Name', field: 'name', sortable: true, align: 'left' },
-  { name: 'phone', label: 'Phone', field: 'phone', sortable: true, align: 'left' },
+  { name: 'address', label: 'Address', field: 'address', align: 'left' },
   { name: 'view', label: 'View', field: 'view', align: 'center', style: 'width: 90px' },
   { name: 'actions', label: 'Actions', field: 'actions', align: 'center', style: 'width: 120px' },
 ]

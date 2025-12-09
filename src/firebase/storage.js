@@ -8,4 +8,3 @@ export const uploadFile = (path, file, metadata) => uploadBytes(ref(storage, pat
 export const getFileUrl = (path) => getDownloadURL(ref(storage, path))
 
 export const deleteFile = (path) => deleteObject(ref(storage, path))
-

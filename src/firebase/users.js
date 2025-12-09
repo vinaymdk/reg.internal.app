@@ -9,6 +9,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore'
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 import { auth, db } from './firebase.js'
@@ -66,5 +67,25 @@ export const deleteUserProfile = (uid, { soft = false } = {}) => {
     })
   }
   return deleteDoc(doc(usersCol, uid))
+}
+
+// Convenience helpers for role management
+export const setUserRoleByUid = (uid, role) =>
+  updateDoc(doc(usersCol, uid), {
+    role,
+    updatedAt: serverTimestamp(),
+  })
+
+export const setUserRoleByEmail = async (email, role) => {
+  const q = query(usersCol, where('email', '==', email))
+  const snap = await getDocs(q)
+  const updates = snap.docs.map((d) =>
+    updateDoc(d.ref, {
+      role,
+      updatedAt: serverTimestamp(),
+    }),
+  )
+  await Promise.all(updates)
+  return snap.docs.map((d) => d.id)
 }
 
