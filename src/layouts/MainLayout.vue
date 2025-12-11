@@ -96,14 +96,16 @@ const showContactPopup = () => {
 
     <q-header elevated>
       <q-toolbar class="bg-secondary text-white shadow-2">
-        <q-toolbar-title align="left"> Chirala SRO Internal Application </q-toolbar-title>
+        <q-toolbar-title align="left" v-if="$q.screen.gt.xs">
+          Chirala SRO Internal Application
+        </q-toolbar-title>
 
         <!-- Home button (added before Dashboard) -->
         <q-btn
           flat
           class="q-mr-md text-white"
           icon="home"
-          label="Home"
+          :label="$q.screen.gt.xs ? 'Home' : ''"
           @click="navigateTo('/home')"
           v-if="currentUser"
         />
@@ -114,40 +116,12 @@ const showContactPopup = () => {
           no-icon-animation
           rounded
           color="secondary"
-          label="Dashboard"
+          :label="$q.screen.gt.xs ? 'Dashboard' : ''"
+          icon="dashboard"
           class="q-mr-lg"
           v-if="userRole?.admin"
         >
           <q-list style="min-width: 200px">
-            <!-- <q-item clickable v-close-popup @click="navigateTo('/home')">
-              <q-item-section avatar>
-                <q-icon name="home" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Home</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-close-popup @click="navigateTo('/dashboard/profile')">
-              <q-item-section avatar>
-                <q-icon name="person" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Profile</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-item clickable v-close-popup @click="navigateTo('/dashboard/settings')">
-              <q-item-section avatar>
-                <q-icon name="settings" />
-              </q-item-section>
-              <q-item-section>
-                <q-item-label>Settings</q-item-label>
-              </q-item-section>
-            </q-item>
-
-            <q-separator /> -->
-
             <!-- Admin only menu items -->
             <q-item
               v-if="userRole?.admin"
@@ -180,11 +154,15 @@ const showContactPopup = () => {
         </q-btn-dropdown>
 
         <!-- Display current user email -->
-        <div class="q-mr-md">
-          <span v-if="currentUser" class="text-white">{{ currentUser.email }}</span>
+        <div class="q-mr-md" v-if="$q.screen.gt.xs">
+          <span v-if="currentUser" class="text-white">{{
+            currentUser.email
+          }}</span>
         </div>
 
-        <div><q-btn round icon="logout" @click="handleLogout" color="secondary" /></div>
+        <div>
+          <q-btn round icon="logout" @click="handleLogout" color="secondary" />
+        </div>
       </q-toolbar>
     </q-header>
 
@@ -192,25 +170,46 @@ const showContactPopup = () => {
       <router-view />
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white footer-distributed content-spacing">
+    <q-footer
+      elevated
+      class="bg-grey-8 text-white footer-distributed content-spacing"
+    >
       <q-toolbar>
-        <q-tabs v-model="tab" class="text-teal">
+        <q-tabs v-model="tab" class="text-teal" :dense="$q.screen.lt.sm">
           <a href="http://registration.ap.gov.in/" target="_blank"
-            ><q-tab name="igrs_ofc" label="IGRS - Official"
+            ><q-tab
+              name="igrs_ofc"
+              icon="account_balance"
+              :label="$q.screen.gt.xs ? 'IGRS - Official' : ''"
           /></a>
           <a href="http://meebhoomi.ap.gov.in/" target="_blank"
-            ><q-tab name="meebhoomi" label="Meebhoomi"
+            ><q-tab
+              name="meebhoomi"
+              icon="landslide"
+              :label="$q.screen.gt.xs ? 'Meebhoomi' : ''"
           /></a>
           <a href="https://cardprimme.rs.ap.gov.in/PDE" target="_blank"
-            ><q-tab name="prime_2" label="Prime 2.0"
+            ><q-tab
+              name="prime_2"
+              icon="price_change"
+              :label="$q.screen.gt.xs ? 'Prime 2.0' : ''"
           /></a>
           <a
             href="https://prdcfms.apcfss.in:44300/sap/bc/ui5_ui5/sap/zfi_rcp_challan/index.html?sap-client=350"
             target="_blank"
-            ><q-tab name="prdcfms" label="CFMS Challan"
+            ><q-tab
+              name="prdcfms"
+              icon="request_quote"
+              :label="$q.screen.gt.xs ? 'CFMS Challan' : ''"
           /></a>
           <!-- Contact button with popup -->
-          <a href="#"><q-btn flat label="Contact" @click="showContactPopup" /></a>
+          <a href="#"
+            ><q-btn
+              flat
+              icon="contacts"
+              :label="$q.screen.gt.xs ? 'Contact' : ''"
+              @click="showContactPopup"
+          /></a>
         </q-tabs>
       </q-toolbar>
     </q-footer>
